@@ -8,6 +8,7 @@ import { Physics } from "@react-three/rapier";
 import WorldColliders from "./WorldColliders";
 import Ball from "./Ball";
 import { Perf } from "r3f-perf";
+import { Leva } from "leva";
 // import PhysicsDebugger from "./PhysicsDebugger";
 
 export default function App() {
@@ -16,11 +17,12 @@ export default function App() {
       camera={{ fov: 45, near: 0.1, far: 200, position: [0, 2, 6] }}
       dpr={[1, 1.5]}
       gl={{ powerPreference: "high-performance" }}
+      className="touch-none"
     >
       <Suspense fallback={null}>
         <Physics timeStep="vary" maxCcdSubsteps={1}>
+          <Leva collapsed />
           {/* <PhysicsDebugger /> */}
-
           <Perf position="top-left" minimal={false} deepAnalyze={false} />
 
           <World />
