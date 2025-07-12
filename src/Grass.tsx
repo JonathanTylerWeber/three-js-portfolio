@@ -26,7 +26,7 @@ export default function GrassTiled({
   fieldSize = 132.88,
   maskSize = 150,
   tilesPerSide = 4,
-  maskUrl = "/models/world-mask.jpg",
+  maskUrl = "/masks/grass-mask3",
   threshold = 0.5,
 }: Props) {
   /* ------------------------------------------------------------------ */

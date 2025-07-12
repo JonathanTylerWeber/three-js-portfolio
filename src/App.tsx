@@ -25,12 +25,7 @@ export default function App() {
 
           <World />
           <WorldColliders />
-          <Grass
-            fieldSize={132.88}
-            maskSize={150}
-            bladeCount={120_000}
-            maskUrl="/masks/grass-mask.jpg"
-          />
+          <Grass fieldSize={132.88} maskSize={150} bladeCount={120_000} />
           <Bugs />
           <CharacterController />
           <Ball url="/models/ball.glb" radius={1} spawn={[-10, 1, -30]} />
