@@ -167,7 +167,7 @@ export default function CharacterController() {
       linearDamping={8} /* quick deceleration */
     >
       {/* Simple capsule approximating Bob’s volume */}
-      <CapsuleCollider args={[1.0, 0.4]} position={[0, 0, 0]} />
+      <CapsuleCollider args={[1.0, 0.75]} position={[0, 0, 0]} />
 
       <group ref={meshGroup}>
         <BobModel ref={bobHandle} scale={0.21} />

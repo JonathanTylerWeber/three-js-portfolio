@@ -17,18 +17,21 @@ const BLOCKERS: Blocker[] = [
   { pos: [0, -0.9, 0], size: [70, 1, 70] },
   // walls:
   { pos: [0, 0.5, 70], size: [70, 1, 1] }, // front wall
-  { pos: [0, 0.5, -62], size: [70, 1, 1] }, // back wall
-  { pos: [67, 0.5, 0], size: [1, 1, 70] }, // right wall
-  { pos: [-67, 0.5, 0], size: [1, 1, 70] }, // left  wall
+  { pos: [0, 0.5, -63.7], size: [70, 1, 1] }, // back wall
+  { pos: [67.6, 0.5, 0], size: [1, 1, 70] }, // right wall
+  { pos: [-67.6, 0.5, 0], size: [1, 1, 70] }, // left  wall
   // buildings:
-  { pos: [0.3, 0.5, -52], size: [9.25, 1, 3] }, //train
+  { pos: [0.3, 0.5, -52], size: [9.0, 1, 3] }, //train
   { pos: [-32, 0.5, -20.5], size: [6.5, 1, 4.5] }, //theater
-  { pos: [34, -0.5, -21], size: [7, 1, 2] }, //museum
   { pos: [-33, 0.5, 32], size: [4.5, 1, 3.5] }, //post office
   { pos: [28, 0.5, 33], size: [5, 1, 3.5] }, //arcade
   { pos: [31.25, 0.5, 37], size: [1.25, 1, 1] }, //gameboy
   { pos: [-51.75, 0.5, 42], size: [1.25, 1, 1] }, //sword
   { pos: [0, 0, 6], size: [2.5, 1, 2.5] }, //shrub
+  { pos: [33.5, -0.5, -22], size: [9.5, 1.65, 2] }, //museum main
+  { pos: [33.6, -0.5, -18], size: [6.5, 1.45, 2] }, //museum front
+  { pos: [33.6, -0.5, -15.6], size: [3.25, 1.25, 1] }, //museum big stair
+  { pos: [33.6, -0.5, -14.6], size: [3.25, 1, 1] }, //museum small stair
   // benches:
   { pos: [9.75, 0, -3.5], size: [1.75, 1, 1], rot: [0, -10, 0] },
   { pos: [-9.5, 0, -4], size: [1.75, 1, 1], rot: [0, 10, 0] },
