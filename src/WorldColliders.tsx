@@ -22,12 +22,12 @@ const BLOCKERS: Blocker[] = [
   { pos: [-67.6, 0.5, 0], size: [1, 1, 70] }, // left  wall
   // buildings:
   { pos: [0.3, 0.5, -52], size: [9.0, 1, 3] }, //train
-  { pos: [-32, 0.5, -20.5], size: [6.5, 1, 4.5] }, //theater
-  { pos: [-33, 0.5, 32], size: [4.5, 1, 3.5] }, //post office
-  { pos: [28, 0.5, 33], size: [5, 1, 3.5] }, //arcade
+  { pos: [-32.4, 0.5, -22], size: [7, 1, 5] }, //theater
+  { pos: [-33.5, 0.5, 32], size: [3.6, 1, 3.5] }, //post office
+  { pos: [28, 0.5, 33], size: [4.7, 1, 3.5] }, //arcade
   { pos: [31.25, 0.5, 37], size: [1.25, 1, 1] }, //gameboy
   { pos: [-51.75, 0.5, 42], size: [1.25, 1, 1] }, //sword
-  { pos: [0, 0, 6], size: [2.5, 1, 2.5] }, //shrub
+  { pos: [-0.2, 0, 6], size: [2.25, 1, 2.5] }, //shrub
   { pos: [33.5, -0.5, -22], size: [9.5, 1.65, 2] }, //museum main
   { pos: [33.6, -0.5, -18], size: [6.5, 1.45, 2] }, //museum front
   { pos: [33.6, -0.5, -15.6], size: [3.25, 1.25, 1] }, //museum big stair
