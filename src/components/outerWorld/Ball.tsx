@@ -10,6 +10,7 @@ import { useGLTF } from "@react-three/drei";
 import { RigidBody, BallCollider } from "@react-three/rapier";
 import { useMemo } from "react";
 import * as THREE from "three";
+import { soccerKick } from "../../utils/audioManager";
 
 interface Props {
   url: string; // GLB path
@@ -76,6 +77,7 @@ export default function Ball({ url, radius = 0.3, spawn = [0, 2, 0] }: Props) {
       colliders={false}
       linearDamping={0.2}
       angularDamping={0.2}
+      onCollisionEnter={soccerKick.play()}
     >
       {/* collider centred at origin, same radius as the mesh */}
       <BallCollider args={[0.6]} />

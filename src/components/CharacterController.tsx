@@ -24,6 +24,7 @@ import {
 } from "@react-three/rapier";
 
 import BobModel, { BobHandle } from "./BobModel";
+import { grassRun, grassWalk } from "../utils/audioManager";
 
 export default function CharacterController() {
   // TODO: add spawn and size props for using in other canvases
@@ -50,7 +51,9 @@ export default function CharacterController() {
 
   const isDown = useRef(false);
   const screenVec = useRef(new THREE.Vector2());
-  const state = useRef<"Idle" | "Walk" | "Run">("Idle");
+
+  type MoveState = "Idle" | "Walk" | "Run";
+  const state = useRef<MoveState>("Idle");
 
   const { camera, size, gl } = useThree();
   const frozenQuat = useRef(new THREE.Quaternion());
@@ -133,6 +136,20 @@ export default function CharacterController() {
       bobHandle.current?.setAnimation(desired);
     }
 
+    // audio
+    if (grassWalk && grassRun) {
+      if (desired === "Run") {
+        grassWalk.pause();
+        grassRun.play();
+      } else if (desired === "Walk") {
+        grassRun.pause();
+        grassWalk.play();
+      } else {
+        grassWalk.pause();
+        grassRun.pause();
+      }
+    }
+
     /* 3 — set linear velocity & rotate mesh ------------------------- */
     if (speed > 0) {
       bodyRef.current.setLinvel(
@@ -175,16 +192,3 @@ export default function CharacterController() {
     </RigidBody>
   );
 }
-
-/* ─────────────────────────────────────────────────────────────────────
-   Future stair-stepping
-   --------------------------------------------------------------------
-   Rapier exposes `RigidBody::setCcdEnabled(true)` for better continuous
-   collision, but true “step up” behaviour is usually done with Rapier’s
-   CharacterController helper. When you’re ready:
-
-     import { CharacterController } from "@react-three/rapier";
-
-   Replace the dynamic RigidBody with that component, keep the capsule
-   collider, and drive movement using `controller.setDesiredTranslation(vec)`.
-   That controller will automatically climb small steps & stairs. */

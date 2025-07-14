@@ -1,15 +1,15 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import World from "./World";
-import CharacterController from "./CharacterController";
-import Grass from "./Grass";
-import Bugs from "./Bugs";
+import World from "./components/outerWorld/World";
+import CharacterController from "./components/CharacterController";
+import Grass from "./components/outerWorld/Grass";
+import Bugs from "./components/outerWorld/Bugs";
 import { Physics } from "@react-three/rapier";
-import WorldColliders from "./WorldColliders";
-import Ball from "./Ball";
+import WorldColliders from "./components/outerWorld/WorldColliders";
+import Ball from "./components/outerWorld/Ball";
 import { Perf } from "r3f-perf";
 import { Leva } from "leva";
-import PhysicsDebugger from "./PhysicsDebugger";
+import PhysicsDebugger from "./utils/PhysicsDebugger";
 
 export default function App() {
   return (
