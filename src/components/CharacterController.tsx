@@ -13,7 +13,7 @@
      (see “Stair stepping” comment near the end).
 */
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import * as THREE from "three";
@@ -24,7 +24,12 @@ import {
 } from "@react-three/rapier";
 
 import BobModel, { BobHandle } from "./BobModel";
-import { grassRun, grassWalk } from "../utils/audioManager";
+import {
+  grassRun,
+  grassWalk,
+  stoneRun,
+  stoneWalk,
+} from "../utils/audioManager";
 
 export default function CharacterController() {
   // TODO: add spawn and size props for using in other canvases
@@ -57,6 +62,36 @@ export default function CharacterController() {
 
   const { camera, size, gl } = useThree();
   const frozenQuat = useRef(new THREE.Quaternion());
+
+  /* ─── stone-mask loading ────────────────────────────────────────── */
+  const [stoneMask, setStoneMask] = useState<ImageData | null>(null);
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    loader.load("/masks/stone-mask.jpg", (tex) => {
+      const img = tex.image as HTMLImageElement;
+      const cv = document.createElement("canvas");
+      cv.width = img.width;
+      cv.height = img.height;
+      const ctx2d = cv.getContext("2d")!;
+      ctx2d.drawImage(img, 0, 0);
+      setStoneMask(ctx2d.getImageData(0, 0, img.width, img.height));
+    });
+  }, []);
+
+  /* ─── mask sampling helper ──────────────────────────────────────── */
+  const MASK_SIZE = 150;
+  const OFFSET_X = 0.6;
+  const OFFSET_Z = 4.2;
+  function sampleStone(x: number, z: number) {
+    if (!stoneMask) return 0;
+    const { width, height, data } = stoneMask;
+    const u = (x - OFFSET_X) / MASK_SIZE + 0.5;
+    const v = (z - OFFSET_Z) / MASK_SIZE + 0.5;
+    if (u < 0 || u > 1 || v < 0 || v > 1) return 0;
+    const ix = Math.floor(u * (width - 1));
+    const iz = Math.floor(v * (height - 1));
+    return data[(iz * width + ix) * 4] / 255;
+  }
 
   /* ─── spawn & camera freeze ─────────────────────────────────────── */
   useEffect(() => {
@@ -137,14 +172,36 @@ export default function CharacterController() {
     }
 
     // audio
-    if (grassWalk && grassRun) {
+    const onStone = sampleStone(pos.x, pos.z) < 0.5;
+
+    if (grassWalk && grassRun && stoneWalk && stoneRun) {
       if (desired === "Run") {
-        grassWalk.pause();
-        grassRun.play();
+        if (onStone) {
+          stoneWalk.pause();
+          stoneRun.play();
+          grassWalk.pause();
+          grassRun.pause();
+        } else {
+          stoneWalk.pause();
+          stoneRun.pause();
+          grassWalk.pause();
+          grassRun.play();
+        }
       } else if (desired === "Walk") {
-        grassRun.pause();
-        grassWalk.play();
+        if (onStone) {
+          stoneWalk.play();
+          stoneRun.pause();
+          grassWalk.pause();
+          grassRun.pause();
+        } else {
+          stoneWalk.pause();
+          stoneRun.pause();
+          grassWalk.play();
+          grassRun.pause();
+        }
       } else {
+        stoneWalk.pause();
+        stoneRun.pause();
         grassWalk.pause();
         grassRun.pause();
       }
