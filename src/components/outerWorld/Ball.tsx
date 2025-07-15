@@ -7,8 +7,8 @@
    • Adds a perfectly matching Rapier BallCollider.
 */
 import { useGLTF } from "@react-three/drei";
-import { RigidBody, BallCollider } from "@react-three/rapier";
-import { useMemo } from "react";
+import { RigidBody, BallCollider, CollisionPayload } from "@react-three/rapier";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { soccerKick } from "../../utils/audioManager";
 
@@ -35,6 +35,8 @@ function toBasic(mat: THREE.Material): THREE.MeshBasicMaterial {
 export default function Ball({ url, radius = 0.3, spawn = [0, 2, 0] }: Props) {
   /* 1 — load GLB (cached by drei) ---------------------------------- */
   const { scene } = useGLTF(url);
+
+  const hitPlaying = useRef(false);
 
   /* 2 — material swap, recenter, scale ----------------------------- */
   const model = useMemo(() => {
@@ -77,10 +79,22 @@ export default function Ball({ url, radius = 0.3, spawn = [0, 2, 0] }: Props) {
       colliders={false}
       linearDamping={0.2}
       angularDamping={0.2}
-      onCollisionEnter={soccerKick.play()}
     >
       {/* collider centred at origin, same radius as the mesh */}
-      <BallCollider args={[0.6]} />
+      <BallCollider
+        args={[0.6]}
+        onCollisionEnter={(payload: CollisionPayload) => {
+          const otherObj = payload.other.colliderObject;
+          // if it’s the ground, do nothing
+          if (otherObj?.name === "ground") return;
+          // otherwise play the kick
+
+          if (hitPlaying.current) return; // skip if already playing
+          hitPlaying.current = true;
+          soccerKick.play(); // one‑shot – finishes automatically
+          setTimeout(() => (hitPlaying.current = false), 500); // debounce
+        }}
+      />
       <primitive object={model} />
     </RigidBody>
   );

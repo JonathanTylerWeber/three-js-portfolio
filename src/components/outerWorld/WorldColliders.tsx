@@ -4,17 +4,19 @@
 */
 import { memo, useMemo } from "react";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
+
 import * as THREE from "three";
 
 type Blocker = {
   pos: THREE.Vector3Tuple;
   size: THREE.Vector3Tuple;
   rot?: THREE.Vector3Tuple;
+  ground?: boolean;
 };
 
 const BLOCKERS: Blocker[] = [
   // ground:
-  { pos: [0, -0.9, 0], size: [70, 1, 70] },
+  { pos: [0, -0.9, 0], size: [70, 1, 70], ground: true },
   // walls:
   { pos: [0, 0.5, 70], size: [70, 1, 1] }, // front wall
   { pos: [0, 0.5, -63.7], size: [70, 1, 1] }, // back wall
@@ -89,6 +91,7 @@ const WorldColliders = memo(function WorldColliders() {
           args={b.size}
           position={b.pos}
           rotation={b.rot}
+          name={b.ground ? "ground" : undefined}
         />
       )),
     []

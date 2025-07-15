@@ -123,7 +123,7 @@ export async function initAudio() {
   const [grassWalk_, grassRun_, soccerKick_] = await Promise.all([
     makeLoop("/audio/footsteps/grass-walk.m4a", 0.1),
     makeLoop("/audio/footsteps/grass-run.m4a", 0.1),
-    makeLoop("/audio/soccer-kick.mp3", 0.1),
+    makeOneShot("/audio/soccer-kick.mp3", 0.1),
   ]);
 
   grassWalk = grassWalk_;
