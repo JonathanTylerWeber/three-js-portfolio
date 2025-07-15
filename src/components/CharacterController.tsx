@@ -67,7 +67,7 @@ export default function CharacterController() {
   const [stoneMask, setStoneMask] = useState<ImageData | null>(null);
   useEffect(() => {
     const loader = new THREE.TextureLoader();
-    loader.load("/masks/stone-mask.jpg", (tex) => {
+    loader.load("/masks/stone-mask2.jpg", (tex) => {
       const img = tex.image as HTMLImageElement;
       const cv = document.createElement("canvas");
       cv.width = img.width;
