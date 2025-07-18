@@ -208,9 +208,10 @@ export default function CharacterController() {
     }
 
     /* 3 — set linear velocity & rotate mesh ------------------------- */
+    const currentVel = bodyRef.current.linvel(); //preserve y velocity to fall
     if (speed > 0) {
       bodyRef.current.setLinvel(
-        { x: dir.x * speed, y: 0, z: dir.z * speed },
+        { x: dir.x * speed, y: currentVel.y, z: dir.z * speed },
         true
       );
       const targetQ = new THREE.Quaternion().setFromUnitVectors(
