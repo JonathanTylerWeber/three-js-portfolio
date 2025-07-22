@@ -9,7 +9,8 @@ import WorldColliders from "./components/outerWorld/WorldColliders";
 import Ball from "./components/outerWorld/Ball";
 import { Perf } from "r3f-perf";
 import { Leva } from "leva";
-import PhysicsDebugger from "./utils/PhysicsDebugger";
+// import PhysicsDebugger from "./utils/PhysicsDebugger";
+import Me from "./components/Me";
 
 export default function App() {
   return (
@@ -22,9 +23,11 @@ export default function App() {
         className="touch-none"
       >
         <Suspense fallback={null}>
-          <Physics timeStep="vary" maxCcdSubsteps={1} debug>
-            <PhysicsDebugger />
+          <Physics timeStep="vary" maxCcdSubsteps={1}>
+            {/* <PhysicsDebugger /> */}
             <Perf position="top-left" minimal={false} deepAnalyze={false} />
+
+            <Me />
 
             <World />
             <WorldColliders />
