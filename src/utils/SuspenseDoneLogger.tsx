@@ -1,11 +1,11 @@
-// SuspenseDoneLogger.tsx
 import { useEffect } from "react";
 
 export default function SuspenseDoneLogger({
   onDone = () => console.log("✅  Suspense resolved: all assets loaded"),
+}: {
+  onDone?: () => void;
 }) {
-  // In React18 + StrictMode this will fire twice in dev.
-  // Guard with a ref if you only want to run once.
+  // React18 Strict‑mode runs effects twice in dev
   useEffect(() => onDone(), [onDone]);
-  return null; // nothing visible
+  return null;
 }
