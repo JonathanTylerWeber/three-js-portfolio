@@ -2,7 +2,16 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        fink: ["FinkHeavy", "sans-serif"],
+      },
+    },
   },
   plugins: [],
+  safelist: [
+    {
+      pattern: /transition-\[clip-path.*\]/,
+    },
+  ],
 };

@@ -11,12 +11,12 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
 /* ─── public handle ────────────────────────────────────────────────── */
-export interface BobHandle {
+export interface PlayerHandle {
   setAnimation: (name: "Idle" | "Walk" | "Run") => void;
 }
 
 /* ─── props ────────────────────────────────────────────────────────── */
-interface BobModelProps {
+interface PlayerModelProps {
   url?: string;
   scale?: number;
   castShadow?: boolean;
@@ -41,8 +41,8 @@ function toBasic(mat: THREE.Material): THREE.MeshBasicMaterial {
 }
 
 /* ─── component ────────────────────────────────────────────────────── */
-const BobModel = memo(
-  forwardRef<BobHandle, BobModelProps>(function BobModel(
+const PlayerModel = memo(
+  forwardRef<PlayerHandle, PlayerModelProps>(function PlayerModel(
     {
       url = "/models/bobAll2.glb",
       scale = 1,
@@ -103,5 +103,5 @@ const BobModel = memo(
   })
 );
 
-export default BobModel;
+export default PlayerModel;
 useGLTF.preload("/bobAll2.glb");

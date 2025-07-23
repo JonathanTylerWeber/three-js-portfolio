@@ -23,15 +23,16 @@ import {
   type RapierRigidBody,
 } from "@react-three/rapier";
 
-import BobModel, { BobHandle } from "./BobModel";
+import { PlayerHandle } from "./PlayerModel";
 import {
   grassRun,
   grassWalk,
   stoneRun,
   stoneWalk,
 } from "../utils/audioManager";
+import PlayerModel from "./PlayerModel";
 
-export default function CharacterController() {
+export default function PlayerController() {
   // TODO: add spawn and size props for using in other canvases
   /* ─── Leva sliders ──────────────────────────────────────────────── */
   const { walkSpeed, runSpeed } = useControls("Movement", {
@@ -52,7 +53,7 @@ export default function CharacterController() {
   /* ─── refs & state ──────────────────────────────────────────────── */
   const bodyRef = useRef<RapierRigidBody | null>(null);
   const meshGroup = useRef<THREE.Group>(null!); // for rotation only
-  const bobHandle = useRef<BobHandle>(null);
+  const playerHandle = useRef<PlayerHandle>(null);
 
   const isDown = useRef(false);
   const screenVec = useRef(new THREE.Vector2());
@@ -168,7 +169,7 @@ export default function CharacterController() {
     /* 2 — animation swap if needed ---------------------------------- */
     if (desired !== state.current) {
       state.current = desired;
-      bobHandle.current?.setAnimation(desired);
+      playerHandle.current?.setAnimation(desired);
     }
 
     // audio
@@ -245,7 +246,7 @@ export default function CharacterController() {
       <CapsuleCollider args={[1.0, 0.75]} position={[0, 0, 0]} />
 
       <group ref={meshGroup}>
-        <BobModel ref={bobHandle} scale={0.21} />
+        <PlayerModel ref={playerHandle} scale={0.21} />
       </group>
     </RigidBody>
   );
