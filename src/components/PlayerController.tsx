@@ -13,7 +13,7 @@
      (see “Stair stepping” comment near the end).
 */
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import * as THREE from "three";
@@ -31,6 +31,7 @@ import {
   stoneWalk,
 } from "../utils/audioManager";
 import PlayerModel from "./PlayerModel";
+import { useImageData } from "../utils/useImageData";
 
 export default function PlayerController() {
   // TODO: add spawn and size props for using in other canvases
@@ -41,7 +42,7 @@ export default function PlayerController() {
   });
 
   const { radius } = useControls("HUD", {
-    radius: { value: 250, min: 20, max: 500, step: 1 },
+    radius: { value: 180, min: 20, max: 500, step: 1 },
   });
 
   const { camX, camY, camZ } = useControls("Camera", {
@@ -65,19 +66,7 @@ export default function PlayerController() {
   const frozenQuat = useRef(new THREE.Quaternion());
 
   /* ─── stone-mask loading ────────────────────────────────────────── */
-  const [stoneMask, setStoneMask] = useState<ImageData | null>(null);
-  useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load("/masks/stone-mask2.jpg", (tex) => {
-      const img = tex.image as HTMLImageElement;
-      const cv = document.createElement("canvas");
-      cv.width = img.width;
-      cv.height = img.height;
-      const ctx2d = cv.getContext("2d")!;
-      ctx2d.drawImage(img, 0, 0);
-      setStoneMask(ctx2d.getImageData(0, 0, img.width, img.height));
-    });
-  }, []);
+  const stoneMask = useImageData("/masks/stone-mask2.jpg");
 
   /* ─── mask sampling helper ──────────────────────────────────────── */
   const MASK_SIZE = 150;

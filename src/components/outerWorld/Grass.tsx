@@ -7,10 +7,11 @@
      Y‑rotation to ±90°.That way the camera never sees a back‑face.
 */
 
-import { useState, useEffect, useMemo, useRef, type JSX } from "react";
+import { useMemo, useRef, type JSX } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import * as THREE from "three";
+import { useImageData } from "../../utils/useImageData";
 
 interface Props {
   bladeCount?: number;
@@ -62,19 +63,7 @@ export default function GrassTiled({
   /* ------------------------------------------------------------------ */
   /* 1 — load mask into ImageData                                       */
   /* ------------------------------------------------------------------ */
-  const [mask, setMask] = useState<ImageData | null>(null);
-
-  useEffect(() => {
-    new THREE.TextureLoader().load(maskUrl, (tex) => {
-      const img = tex.image as HTMLImageElement;
-      const cv = document.createElement("canvas");
-      cv.width = img.width;
-      cv.height = img.height;
-      const ctx = cv.getContext("2d")!;
-      ctx.drawImage(img, 0, 0);
-      setMask(ctx.getImageData(0, 0, img.width, img.height));
-    });
-  }, [maskUrl]);
+  const mask = useImageData(maskUrl);
 
   /* ------------------------------------------------------------------ */
   /* 2 — shared geometry, material, wind uniform                        */
@@ -108,8 +97,8 @@ export default function GrassTiled({
         fragmentShader: /* glsl */ `
           varying vec2 vUv;
           void main() {
-            vec3 col = mix(vec3(0.12,0.55,0.10),
-                            vec3(0.25,0.90,0.25), vUv.y);
+            vec3 col = mix(vec3(0.14,0.60,0.12),
+                            vec3(0.28,0.93,0.28), vUv.y);
             gl_FragColor = vec4(col, 1.0);
           }`,
       }),

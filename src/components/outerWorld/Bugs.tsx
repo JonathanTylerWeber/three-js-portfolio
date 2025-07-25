@@ -1,7 +1,8 @@
 /* Bugs.tsx  – “classic” version (unchanged visuals) */
-import { useMemo, useRef, useLayoutEffect, useEffect, useState } from "react";
+import { useMemo, useRef, useLayoutEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useImageData } from "../../utils/useImageData";
 
 export default function Bugs({
   area = 100,
@@ -14,18 +15,7 @@ export default function Bugs({
   maskUrl?: string;
   threshold?: number;
 }) {
-  /* 1 ─ load luminance mask ------------------------------------------------ */
-  const [mask, setMask] = useState<ImageData | null>(null);
-  useEffect(() => {
-    new THREE.TextureLoader().load(maskUrl, (tex) => {
-      const img = tex.image as HTMLImageElement;
-      const cv = document.createElement("canvas");
-      cv.width = img.width;
-      cv.height = img.height;
-      cv.getContext("2d")!.drawImage(img, 0, 0);
-      setMask(cv.getContext("2d")!.getImageData(0, 0, img.width, img.height));
-    });
-  }, [maskUrl]);
+  const mask = useImageData(maskUrl);
 
   /* 2 ─ geometry (same as before) ----------------------------------------- */
   const geometry = useMemo(() => {

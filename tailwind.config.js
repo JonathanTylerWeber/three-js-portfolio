@@ -9,9 +9,4 @@ export default {
     },
   },
   plugins: [],
-  safelist: [
-    {
-      pattern: /transition-\[clip-path.*\]/,
-    },
-  ],
 };

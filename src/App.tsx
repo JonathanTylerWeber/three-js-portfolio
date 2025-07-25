@@ -13,26 +13,22 @@ import PlayerController from "./components/PlayerController";
 import LoadingScreen from "./components/LoadingScreen";
 import SuspenseDoneLogger from "./utils/SuspenseDoneLogger";
 import { Preload } from "@react-three/drei";
-import GpuWarmup from "./utils/GpuWarmup";
 
 export default function App() {
-  /** `assetsLoaded` flips to true the moment <Suspense> settles                */
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
-  /** We keep the overlay mounted until the reveal animation finishes           */
+  const [assetsLoaded, setAssetsLoaded] = useState(false); // Suspense done
   const [showLoader, setShowLoader] = useState(true);
-
-  const [gpuReady, setGpuReady] = useState(false);
 
   return (
     <>
       <Leva collapsed />
-      /* show overlay until textures + fps smooth */
+
       {showLoader && (
         <LoadingScreen
-          ready={assetsLoaded && gpuReady}
+          ready={assetsLoaded}
           onFinished={() => setShowLoader(false)}
         />
       )}
+
       <Canvas
         camera={{ fov: 45, near: 0.1, far: 200, position: [0, 2, 6] }}
         dpr={[1, 1.5]}
@@ -43,10 +39,6 @@ export default function App() {
           fallback={null /* no extra fallback here – overlay handles it */}
         >
           <SuspenseDoneLogger onDone={() => setAssetsLoaded(true)} />
-
-          {assetsLoaded && !gpuReady && (
-            <GpuWarmup onDone={() => setGpuReady(true)} />
-          )}
 
           <Preload all />
           <Physics timeStep="vary" maxCcdSubsteps={1}>

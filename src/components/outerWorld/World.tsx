@@ -1,7 +1,9 @@
 /* Experience.tsx ---------------------------------------------------------- */
 import { Suspense, useMemo } from "react";
-import { useGLTF, useTexture } from "@react-three/drei";
+import { useGLTF, useKTX2 } from "@react-three/drei";
 import * as THREE from "three";
+
+useGLTF.preload("/models/world15new.glb");
 
 export default function World() {
   /* 1 — load assets ------------------------------------------------------- */
@@ -9,7 +11,9 @@ export default function World() {
   const { scene } = useGLTF("/models/world15new.glb");
 
   // Bake:  PNG with RGB + alpha
-  const map = useTexture("/textures/bake15EditComp.png");
+  // const map = useTexture("/textures/bake15EditCompSmall.png");
+  const map = useKTX2("/textures/bake15EditCompSmallNew_uastc.ktx");
+
   map.flipY = false; // GLTF UVs are already “Y-up”
   map.colorSpace = THREE.SRGBColorSpace; // r152+ (use .encoding on r151-)
   map.needsUpdate = true;
@@ -45,6 +49,3 @@ export default function World() {
     </>
   );
 }
-
-/* ---- remember to tell drei about the GLB once so it’s cached ---- */
-useGLTF.preload("/world12.glb");

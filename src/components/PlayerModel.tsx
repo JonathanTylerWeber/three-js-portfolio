@@ -40,6 +40,8 @@ function toBasic(mat: THREE.Material): THREE.MeshBasicMaterial {
   return basic;
 }
 
+useGLTF.preload("/bobAll2.glb");
+
 /* ─── component ────────────────────────────────────────────────────── */
 const PlayerModel = memo(
   forwardRef<PlayerHandle, PlayerModelProps>(function PlayerModel(
@@ -104,4 +106,3 @@ const PlayerModel = memo(
 );
 
 export default PlayerModel;
-useGLTF.preload("/bobAll2.glb");

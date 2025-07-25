@@ -44,6 +44,8 @@ interface Props {
   bodyBrightness?: number;
 }
 
+useGLTF.preload("/models/acNpc.glb");
+
 /* ---------------------------------------------------------------- component */
 export default function Character({
   url = "/models/acNpc.glb",
@@ -213,5 +215,3 @@ export default function Character({
     />
   );
 }
-
-useGLTF.preload("/models/acNpc.glb");
