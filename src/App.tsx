@@ -1,5 +1,6 @@
+// src/App.tsx
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback } from "react";
 import World from "./components/outerWorld/World";
 import Grass from "./components/outerWorld/Grass";
 import Bugs from "./components/outerWorld/Bugs";
@@ -15,11 +16,15 @@ import SuspenseDoneLogger from "./utils/SuspenseDoneLogger";
 import { Preload } from "@react-three/drei";
 import Dialog from "./components/Dialog";
 
-export default function App() {
-  const [assetsLoaded, setAssetsLoaded] = useState(false); // Suspense done
-  const [showLoader, setShowLoader] = useState(true);
+type Phase = "loading" | "introMove" | "dialog" | "play";
 
-  const [showDialog, setShowDialog] = useState(false);
+export default function App() {
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+
+  const handleSuspenseDone = useCallback(() => {
+    setAssetsLoaded(true);
+  }, []);
 
   const dialogue = [
     "Hi I'm Jonathan, welcome to my portfolio!",
@@ -32,18 +37,18 @@ export default function App() {
     <>
       <Leva collapsed />
 
-      {showLoader && (
+      {phase === "loading" && (
         <LoadingScreen
           ready={assetsLoaded}
-          onFinished={() => setShowLoader(false)}
+          onFinished={() => setPhase("introMove")}
         />
       )}
 
-      {showDialog && (
+      {phase === "dialog" && (
         <Dialog
           characterName="Jonathan"
           dialogue={dialogue}
-          onClose={() => setShowDialog(false)}
+          onClose={() => setPhase("play")}
         />
       )}
 
@@ -53,11 +58,8 @@ export default function App() {
         gl={{ powerPreference: "high-performance" }}
         className="touch-none"
       >
-        <Suspense
-          fallback={null /* no extra fallback here – overlay handles it */}
-        >
-          <SuspenseDoneLogger onDone={() => setAssetsLoaded(true)} />
-
+        <Suspense fallback={null}>
+          <SuspenseDoneLogger onDone={handleSuspenseDone} />
           <Preload all />
           <Physics timeStep="vary" maxCcdSubsteps={1}>
             <Perf position="top-left" minimal={false} deepAnalyze={false} />
@@ -65,21 +67,17 @@ export default function App() {
             <World />
             <WorldColliders />
             <Character />
-            <PlayerController />
+
+            <PlayerController
+              intro={phase === "introMove"}
+              disableInput={phase !== "play"}
+              onIntroComplete={() => setPhase("dialog")}
+            />
+
             <Grass fieldSize={132.88} maskSize={150} bladeCount={120_000} />
             <Bugs />
             <Ball url="/models/ball.glb" radius={1} spawn={[-10, 1, -30]} />
           </Physics>
-          {/* 
-          <Html fullscreen>
-            {showDialog && (
-              <Dialog
-                characterName="Kicks"
-                dialogue={kicksDialogue}
-                onClose={() => setShowDialog(false)}
-              />
-            )}
-          </Html> */}
         </Suspense>
       </Canvas>
     </>
