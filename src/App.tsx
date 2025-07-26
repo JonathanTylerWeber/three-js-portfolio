@@ -1,4 +1,3 @@
-// src/App.tsx
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useState, useCallback } from "react";
 import World from "./components/outerWorld/World";
@@ -39,15 +38,26 @@ export default function App() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
 
+  /** Suspense finished streaming →assets loaded */
   const handleSuspenseDone = useCallback(() => {
     setAssetsLoaded(true);
+  }, []);
 
-    // unlock & play sounds once buffers are ready
+  /** Start‑button click →play horn immediately */
+  const handleStart = useCallback(() => {
     unlockAudioContext();
+
     audioReady.then(() => {
-      trainHorn.play(); // one-shot on suspense finish
-      mainTheme.play(); // loop main theme
+      trainHorn.play(); // instant
+      setTimeout(() => {
+        mainTheme.play(); // fade in after 1s
+      }, 2000);
     });
+  }, []);
+
+  /** Wipe animation done →enter intro‑walk phase */
+  const handleWipeFinished = useCallback(() => {
+    setPhase("introMove");
   }, []);
 
   return (
@@ -57,7 +67,8 @@ export default function App() {
       {phase === "loading" && (
         <LoadingScreen
           ready={assetsLoaded}
-          onFinished={() => setPhase("introMove")}
+          onStart={handleStart} // click‑time callback
+          onFinished={handleWipeFinished}
         />
       )}
 

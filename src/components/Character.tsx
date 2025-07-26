@@ -43,7 +43,6 @@ interface Props {
 }
 
 const isMesh = (o: Object3D): o is Mesh => (o as Mesh).isMesh === true;
-
 useGLTF.preload("/models/acNpc.glb");
 
 export default function Character({
@@ -54,7 +53,7 @@ export default function Character({
   bodyBrightness = 1.15,
   dialogClip,
 }: Props) {
-  // Load model and textures
+  // Load model + textures
   const { scene, animations } = useGLTF(url);
   const [openTex, closedTex] = useLoader(TextureLoader, [
     openTexUrl,
@@ -66,7 +65,7 @@ export default function Character({
     t.needsUpdate = true;
   });
 
-  // Replace materials with MeshBasicMaterial
+  // Replace materials
   useEffect(() => {
     scene.traverse((o) => {
       if (!isMesh(o)) return;
@@ -94,7 +93,7 @@ export default function Character({
     });
   }, [scene, headName, bodyBrightness]);
 
-  // Get head mesh to swap face textures
+  // Head mesh for face swap
   const headRef = useRef<Mesh | null>(null);
   useEffect(() => {
     scene.traverse((o) => {
@@ -104,10 +103,10 @@ export default function Character({
     });
   }, [scene, headName]);
 
-  // Set up mixer and actions
+  // Mixer + actions
   const { actions, mixer } = useAnimations(animations, scene);
 
-  // Build clip info
+  // Clip lookup
   const clips: Record<ClipName, ClipInfo> = useMemo(
     () => ({
       idle: { action: actions.idle ?? null, tex: openTex, speed: 0.7 },
@@ -125,7 +124,7 @@ export default function Character({
     [actions, openTex, closedTex]
   );
 
-  // Memoized face texture setter
+  // Face swap helper
   const setFaceTexture = useCallback((tex: Texture) => {
     const head = headRef.current;
     if (!head) return;
@@ -141,43 +140,43 @@ export default function Character({
     });
   }, []);
 
-  // Track previous action
   const prevRef = useRef<AnimationAction | null>(null);
-  const FADE_DURATION = 0.5;
+  const FADE_TIME = 0.5;
 
-  // On mount: play idle
+  // Play idle on mount
   useEffect(() => {
     const info = clips.idle;
-    const action = info.action;
-    if (action) {
-      action.reset();
-      action.setLoop(LoopRepeat, Infinity);
-      action.fadeIn(FADE_DURATION);
-      action.timeScale = info.speed;
-      action.play();
-      setFaceTexture(info.tex);
-      prevRef.current = action;
-    }
-  }, [clips.idle, setFaceTexture]);
+    if (!info.action) return;
+    const idle = info.action;
+    idle.reset();
+    idle.setLoop(LoopRepeat, Infinity);
+    idle.timeScale = info.speed;
+    idle.play();
+    mixer.update(0); // apply pose
+    setFaceTexture(info.tex);
+    prevRef.current = idle;
+  }, [clips.idle, mixer, setFaceTexture]);
 
-  // On dialogClip change: cross-fade
+  // Cross-fade when dialogClip changes
   useEffect(() => {
     const name = dialogClip ?? "idle";
     const info = clips[name];
+    if (!info.action) return;
     const next = info.action;
-    if (!next) return;
     const prev = prevRef.current;
+
     if (prev === next) return;
 
+    // prepare next
     next.reset();
     next.setLoop(LoopRepeat, Infinity);
-    next.fadeIn(FADE_DURATION);
     next.timeScale = info.speed;
+    next.fadeIn(FADE_TIME);
     next.play();
 
-    if (prev) {
-      prev.fadeOut(FADE_DURATION);
-    }
+    // fade out prev
+    prev?.fadeOut(FADE_TIME);
+
     setFaceTexture(info.tex);
     prevRef.current = next;
   }, [dialogClip, clips, setFaceTexture]);
