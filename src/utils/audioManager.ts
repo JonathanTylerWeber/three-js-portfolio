@@ -139,8 +139,8 @@ export async function initAudio() {
     makeLoop("/audio/footsteps/stone-walk.m4a", 0.1),
     makeLoop("/audio/footsteps/stone-run.m4a", 0.1),
     makeOneShot("/audio/soccer-kick.mp3", 0.2),
-    makeOneShot("/audio/train-horn.mp3", 0.1),
-    makeLoop("/audio/mainTheme.mp3", 0.2),
+    makeOneShot("/audio/train-horn.mp3", 0.05),
+    makeLoop("/audio/mainTheme.mp3", 0.1),
   ]);
 
   grassWalk = grassWalk_;

@@ -1,4 +1,3 @@
-// src/components/PlayerController.tsx
 import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
@@ -52,6 +51,22 @@ export default function PlayerController({
 
   const { camera, size, gl } = useThree();
   const stoneMask = useImageData("/masks/stone-mask2.jpg");
+
+  // Original mask sampling settings
+  const MASK_SIZE = 150;
+  const OFFSET_X = 0.6;
+  const OFFSET_Z = 4.2;
+
+  function sampleStone(x: number, z: number): number {
+    if (!stoneMask) return 0;
+    const { width, height, data } = stoneMask;
+    const u = (x - OFFSET_X) / MASK_SIZE + 0.5;
+    const v = (z - OFFSET_Z) / MASK_SIZE + 0.5;
+    if (u < 0 || u > 1 || v < 0 || v > 1) return 0;
+    const ix = Math.floor(u * (width - 1));
+    const iz = Math.floor(v * (height - 1));
+    return data[(iz * width + ix) * 4] / 255;
+  }
 
   const INTRO_DIST = 0;
   const INTRO_ANGLE = Math.PI / -1.4;
@@ -109,17 +124,6 @@ export default function PlayerController({
       window.removeEventListener("pointerup", onUp);
     };
   }, [gl, size, stage, disableInput]);
-
-  const sampleStone = (x: number, z: number): number => {
-    if (!stoneMask) return 0;
-    const { width, height, data } = stoneMask;
-    const u = (x + 0.6) / 150 + 0.5;
-    const v = (z + 4.2) / 150 + 0.5;
-    if (u < 0 || u > 1 || v < 0 || v > 1) return 0;
-    const ix = Math.floor(u * (width - 1));
-    const iz = Math.floor(v * (height - 1));
-    return data[(iz * width + ix) * 4] / 255;
-  };
 
   useFrame(() => {
     if (!bodyRef.current) return;
@@ -181,7 +185,7 @@ export default function PlayerController({
       playerHandle.current?.setAnimation(desired);
     }
 
-    const onStone = stoneMask && sampleStone(pos.x, pos.z) < 0.5;
+    const onStone = sampleStone(pos.x, pos.z) < 0.5;
     if (grassWalk && grassRun && stoneWalk && stoneRun) {
       if (desired === "Run") {
         if (onStone) {
