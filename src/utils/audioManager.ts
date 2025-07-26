@@ -119,25 +119,37 @@ export let grassWalk: Sound,
   grassRun: Sound,
   stoneWalk: Sound,
   stoneRun: Sound,
-  soccerKick: Sound;
+  soccerKick: Sound,
+  trainHorn: Sound,
+  mainTheme: Sound;
 
 /** Pre‑load every audio file – call once before you enter the game. */
 export async function initAudio() {
-  // load in parallel
-  const [grassWalk_, grassRun_, stoneWalk_, stoneRun_, soccerKick_] =
-    await Promise.all([
-      makeLoop("/audio/footsteps/grass-walk.m4a", 0.1),
-      makeLoop("/audio/footsteps/grass-run.m4a", 0.1),
-      makeLoop("/audio/footsteps/stone-walk.m4a", 0.1),
-      makeLoop("/audio/footsteps/stone-run.m4a", 0.1),
-      makeOneShot("/audio/soccer-kick.mp3", 0.2),
-    ]);
+  const [
+    grassWalk_,
+    grassRun_,
+    stoneWalk_,
+    stoneRun_,
+    soccerKick_,
+    trainHorn_,
+    mainTheme_,
+  ] = await Promise.all([
+    makeLoop("/audio/footsteps/grass-walk.m4a", 0.1),
+    makeLoop("/audio/footsteps/grass-run.m4a", 0.1),
+    makeLoop("/audio/footsteps/stone-walk.m4a", 0.1),
+    makeLoop("/audio/footsteps/stone-run.m4a", 0.1),
+    makeOneShot("/audio/soccer-kick.mp3", 0.2),
+    makeOneShot("/audio/train-horn.mp3", 0.1),
+    makeLoop("/audio/mainTheme.mp3", 0.2),
+  ]);
 
   grassWalk = grassWalk_;
   grassRun = grassRun_;
   stoneWalk = stoneWalk_;
   stoneRun = stoneRun_;
   soccerKick = soccerKick_;
+  trainHorn = trainHorn_;
+  mainTheme = mainTheme_;
 }
 
 export const audioReady = initAudio();

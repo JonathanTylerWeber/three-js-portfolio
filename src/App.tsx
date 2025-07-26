@@ -9,29 +9,46 @@ import WorldColliders from "./components/outerWorld/WorldColliders";
 import Ball from "./components/outerWorld/Ball";
 import { Perf } from "r3f-perf";
 import { Leva } from "leva";
-import Character from "./components/Character";
+import Character, { ClipName } from "./components/Character";
 import PlayerController from "./components/PlayerController";
 import LoadingScreen from "./components/LoadingScreen";
 import SuspenseDoneLogger from "./utils/SuspenseDoneLogger";
 import { Preload } from "@react-three/drei";
 import Dialog from "./components/Dialog";
+import {
+  unlockAudioContext,
+  audioReady,
+  trainHorn,
+  mainTheme,
+} from "./utils/audioManager";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
+
+const dialogueEntries: { text: string; clip: ClipName }[] = [
+  { text: "Hi I'm Jonathan, welcome to my portfolio!", clip: "wave" },
+  { text: "I'm a Software Engineer and Creative Developer", clip: "talking1" },
+  { text: "You can hold down to move around.", clip: "talking2" },
+  {
+    text: "Each building will tell you a bit more about me and my work. Explore around a bit, I hope you enjoy!",
+    clip: "clap",
+  },
+];
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [dialogIndex, setDialogIndex] = useState(0);
 
   const handleSuspenseDone = useCallback(() => {
     setAssetsLoaded(true);
-  }, []);
 
-  const dialogue = [
-    "Hi I'm Jonathan, welcome to my portfolio!",
-    "I'm a Software Engineer and Creative Developer",
-    "You can hold down to move around.",
-    "Each building will tell you a bit more about me and my work. Explore around a bit, I hope you enjoy!",
-  ];
+    // unlock & play sounds once buffers are ready
+    unlockAudioContext();
+    audioReady.then(() => {
+      trainHorn.play(); // one-shot on suspense finish
+      mainTheme.play(); // loop main theme
+    });
+  }, []);
 
   return (
     <>
@@ -46,9 +63,16 @@ export default function App() {
 
       {phase === "dialog" && (
         <Dialog
-          characterName="Jonathan"
-          dialogue={dialogue}
-          onClose={() => setPhase("play")}
+          entries={dialogueEntries}
+          currentIndex={dialogIndex}
+          onNext={() => {
+            if (dialogIndex < dialogueEntries.length - 1) {
+              setDialogIndex((i) => i + 1);
+            } else {
+              setPhase("play");
+              setDialogIndex(0);
+            }
+          }}
         />
       )}
 
@@ -61,12 +85,20 @@ export default function App() {
         <Suspense fallback={null}>
           <SuspenseDoneLogger onDone={handleSuspenseDone} />
           <Preload all />
+
           <Physics timeStep="vary" maxCcdSubsteps={1}>
             <Perf position="top-left" minimal={false} deepAnalyze={false} />
 
             <World />
             <WorldColliders />
-            <Character />
+
+            <Character
+              dialogClip={
+                phase === "dialog"
+                  ? dialogueEntries[dialogIndex].clip
+                  : undefined
+              }
+            />
 
             <PlayerController
               intro={phase === "introMove"}

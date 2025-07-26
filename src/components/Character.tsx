@@ -1,5 +1,5 @@
-// Character.tsx ────────────────────────────────────────────────────────────
-import { useEffect, useMemo, useRef } from "react";
+// src/components/Character.tsx
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import {
@@ -12,16 +12,13 @@ import {
   SkinnedMesh,
   Material,
   AnimationAction,
+  LoopRepeat,
   Color,
   SRGBColorSpace,
   Object3D,
 } from "three";
-import { useControls } from "leva";
 
-const isMesh = (o: Object3D): o is Mesh => (o as Mesh).isMesh === true;
-
-/* ---------------------------------------------------------------- types */
-type ClipName =
+export type ClipName =
   | "idle"
   | "clap"
   | "wave"
@@ -42,19 +39,22 @@ interface Props {
   closedTexUrl?: string;
   headName?: string;
   bodyBrightness?: number;
+  dialogClip?: ClipName;
 }
+
+const isMesh = (o: Object3D): o is Mesh => (o as Mesh).isMesh === true;
 
 useGLTF.preload("/models/acNpc.glb");
 
-/* ---------------------------------------------------------------- component */
 export default function Character({
   url = "/models/acNpc.glb",
   openTexUrl = "/textures/open.png",
   closedTexUrl = "/textures/closed.png",
   headName = "head",
   bodyBrightness = 1.15,
+  dialogClip,
 }: Props) {
-  /* 1 ─ assets ------------------------------------------------------------ */
+  // Load model and textures
   const { scene, animations } = useGLTF(url);
   const [openTex, closedTex] = useLoader(TextureLoader, [
     openTexUrl,
@@ -66,29 +66,25 @@ export default function Character({
     t.needsUpdate = true;
   });
 
-  /* 2 ─ materials --------------------------------------------------------- */
+  // Replace materials with MeshBasicMaterial
   useEffect(() => {
     scene.traverse((o) => {
       if (!isMesh(o)) return;
-
       const src = o.material as
         | MeshStandardMaterial
         | MeshPhysicalMaterial
         | MeshBasicMaterial
         | Material;
-
       const mat = new MeshBasicMaterial({
         map: (src as MeshStandardMaterial).map ?? null,
         color: "color" in src ? (src.color as Color) : new Color(0xffffff),
         transparent: src.transparent,
       }) as MeshBasicMaterial & { skinning?: boolean };
-
       if ((o as SkinnedMesh).isSkinnedMesh) mat.skinning = true;
       if (mat.map) {
         mat.map.colorSpace = SRGBColorSpace;
         mat.map.needsUpdate = true;
       }
-
       if (!o.name.toLowerCase().includes(headName.toLowerCase())) {
         mat.color.multiplyScalar(bodyBrightness);
       } else {
@@ -98,7 +94,7 @@ export default function Character({
     });
   }, [scene, headName, bodyBrightness]);
 
-  /* 3 ─ find face mesh ---------------------------------------------------- */
+  // Get head mesh to swap face textures
   const headRef = useRef<Mesh | null>(null);
   useEffect(() => {
     scene.traverse((o) => {
@@ -108,51 +104,29 @@ export default function Character({
     });
   }, [scene, headName]);
 
-  /* 4 ─ mixer & controls -------------------------------------------------- */
+  // Set up mixer and actions
   const { actions, mixer } = useAnimations(animations, scene);
-  const { current } = useControls({
-    current: {
-      value: "idle",
-      options: [
-        "idle",
-        "clap",
-        "wave",
-        "talking1",
-        "talking2",
-        "talking3",
-        "twerk",
-      ],
-    },
-  }) as { current: ClipName };
 
-  /* 5 ─ clip table -------------------------------------------------------- */
+  // Build clip info
   const clips: Record<ClipName, ClipInfo> = useMemo(
     () => ({
-      idle: { action: actions["idle"] ?? null, tex: openTex, speed: 0.7 },
-      clap: { action: actions["clap"] ?? null, tex: closedTex, speed: 0.8 },
-      wave: { action: actions["wave"] ?? null, tex: closedTex, speed: 0.8 },
-      talking1: {
-        action: actions["talking1"] ?? null,
-        tex: openTex,
-        speed: 0.6,
-      },
+      idle: { action: actions.idle ?? null, tex: openTex, speed: 0.7 },
+      clap: { action: actions.clap ?? null, tex: closedTex, speed: 0.8 },
+      wave: { action: actions.wave ?? null, tex: closedTex, speed: 0.8 },
+      talking1: { action: actions.talking1 ?? null, tex: openTex, speed: 0.6 },
       talking2: {
-        action: actions["talking2"] ?? null,
+        action: actions.talking2 ?? null,
         tex: closedTex,
         speed: 0.6,
       },
-      talking3: {
-        action: actions["talking3"] ?? null,
-        tex: openTex,
-        speed: 0.6,
-      },
-      twerk: { action: actions["twerk"] ?? null, tex: openTex, speed: 0.5 },
+      talking3: { action: actions.talking3 ?? null, tex: openTex, speed: 0.6 },
+      twerk: { action: actions.twerk ?? null, tex: openTex, speed: 0.5 },
     }),
     [actions, openTex, closedTex]
   );
 
-  /* 6 ─ face PNG setter --------------------------------------------------- */
-  const setFaceTexture = (tex: Texture) => {
+  // Memoized face texture setter
+  const setFaceTexture = useCallback((tex: Texture) => {
     const head = headRef.current;
     if (!head) return;
     const mats = Array.isArray(head.material)
@@ -165,44 +139,50 @@ export default function Character({
         m.needsUpdate = true;
       }
     });
-  };
+  }, []);
 
-  /* 7 ─ cross‑fade logic -------------------------------------------------- */
-  const prevActionRef = useRef<AnimationAction | null>(null);
-  const FADE = 0.25;
+  // Track previous action
+  const prevRef = useRef<AnimationAction | null>(null);
+  const FADE_DURATION = 0.5;
 
+  // On mount: play idle
   useEffect(() => {
-    const { action: next, tex, speed } = clips[current];
-    if (!next) return;
-
-    // first time: play immediately
-    if (!prevActionRef.current) {
-      next.enabled = true;
-      next.setEffectiveWeight(1);
-      next.timeScale = speed;
-      next.play();
-      setFaceTexture(tex);
-      prevActionRef.current = next;
-      return;
+    const info = clips.idle;
+    const action = info.action;
+    if (action) {
+      action.reset();
+      action.setLoop(LoopRepeat, Infinity);
+      action.fadeIn(FADE_DURATION);
+      action.timeScale = info.speed;
+      action.play();
+      setFaceTexture(info.tex);
+      prevRef.current = action;
     }
+  }, [clips.idle, setFaceTexture]);
 
-    const prev = prevActionRef.current;
-    if (prev === next) return; // same clip selected
+  // On dialogClip change: cross-fade
+  useEffect(() => {
+    const name = dialogClip ?? "idle";
+    const info = clips[name];
+    const next = info.action;
+    if (!next) return;
+    const prev = prevRef.current;
+    if (prev === next) return;
 
-    // prepare next clip
     next.reset();
-    next.enabled = true;
-    next.timeScale = speed;
-    next.setEffectiveWeight(1);
-
-    // smooth cross‑fade
-    prev.crossFadeTo(next, FADE, false);
+    next.setLoop(LoopRepeat, Infinity);
+    next.fadeIn(FADE_DURATION);
+    next.timeScale = info.speed;
     next.play();
-    setFaceTexture(tex);
-    prevActionRef.current = next;
-  }, [current, clips]);
 
-  /* 8 ─ tick mixer -------------------------------------------------------- */
+    if (prev) {
+      prev.fadeOut(FADE_DURATION);
+    }
+    setFaceTexture(info.tex);
+    prevRef.current = next;
+  }, [dialogClip, clips, setFaceTexture]);
+
+  // Advance mixer
   useFrame((_, dt) => mixer.update(dt));
 
   return (
