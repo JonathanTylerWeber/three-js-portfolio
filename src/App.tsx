@@ -13,20 +13,37 @@ import PlayerController from "./components/PlayerController";
 import LoadingScreen from "./components/LoadingScreen";
 import SuspenseDoneLogger from "./utils/SuspenseDoneLogger";
 import { Preload } from "@react-three/drei";
+import Dialog from "./components/Dialog";
 
 export default function App() {
   const [assetsLoaded, setAssetsLoaded] = useState(false); // Suspense done
   const [showLoader, setShowLoader] = useState(true);
 
+  const [showDialog, setShowDialog] = useState(false);
+
+  const dialogue = [
+    "Hi I'm Jonathan, welcome to my portfolio!",
+    "I'm a Software Engineer and Creative Developer",
+    "You can hold down to move around.",
+    "Each building will tell you a bit more about me and my work. Explore around a bit, I hope you enjoy!",
+  ];
+
   return (
     <>
       <Leva collapsed />
-      {/* test */}
 
       {showLoader && (
         <LoadingScreen
           ready={assetsLoaded}
           onFinished={() => setShowLoader(false)}
+        />
+      )}
+
+      {showDialog && (
+        <Dialog
+          characterName="Jonathan"
+          dialogue={dialogue}
+          onClose={() => setShowDialog(false)}
         />
       )}
 
@@ -53,6 +70,16 @@ export default function App() {
             <Bugs />
             <Ball url="/models/ball.glb" radius={1} spawn={[-10, 1, -30]} />
           </Physics>
+          {/* 
+          <Html fullscreen>
+            {showDialog && (
+              <Dialog
+                characterName="Kicks"
+                dialogue={kicksDialogue}
+                onClose={() => setShowDialog(false)}
+              />
+            )}
+          </Html> */}
         </Suspense>
       </Canvas>
     </>
