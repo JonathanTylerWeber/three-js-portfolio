@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useControls } from "leva";
 import * as THREE from "three";
 import {
   RigidBody,
@@ -23,27 +22,24 @@ interface Props {
   onIntroComplete?: () => void;
 }
 
+/* ────────── constants ────────── */
+const WALK_SPEED = 4;
+const RUN_SPEED = 8;
+const INPUT_RADIUS = 180;
+
+const CLOSE_CAM = new THREE.Vector3(0, 6, 10);
+const NORMAL_CAM = new THREE.Vector3(0, 12, 17);
+
 export default function PlayerController({
   intro = false,
   disableInput = false,
   onIntroComplete,
 }: Props) {
-  const { walkSpeed, runSpeed } = useControls("Movement", {
-    walkSpeed: { value: 4, min: 0.2, max: 20, step: 0.1 },
-    runSpeed: { value: 8, min: 0.5, max: 30, step: 0.1 },
-  });
-  const { radius } = useControls("HUD", {
-    radius: { value: 180, min: 20, max: 500, step: 1 },
-  });
-  const { camX, camY, camZ } = useControls("Camera", {
-    camX: { value: 0, min: -200, max: 200, step: 0.1 },
-    camY: { value: 12, min: -200, max: 200, step: 0.1 },
-    camZ: { value: 17, min: -200, max: 200, step: 0.1 },
-  });
-
+  /* refs & state */
   const bodyRef = useRef<RapierRigidBody | null>(null);
   const meshGroup = useRef<THREE.Group>(null!);
   const playerHandle = useRef<PlayerHandle>(null);
+  const camOffset = useRef(new THREE.Vector3().copy(CLOSE_CAM));
 
   const isDown = useRef(false);
   const screenVec = useRef(new THREE.Vector2());
@@ -52,11 +48,10 @@ export default function PlayerController({
   const { camera, size, gl } = useThree();
   const stoneMask = useImageData("/masks/stone-mask2.jpg");
 
-  // Original mask sampling settings
-  const MASK_SIZE = 150;
-  const OFFSET_X = 0.6;
-  const OFFSET_Z = 4.2;
-
+  /* mask sampling */
+  const MASK_SIZE = 150,
+    OFFSET_X = 0.6,
+    OFFSET_Z = 4.2;
   function sampleStone(x: number, z: number): number {
     if (!stoneMask) return 0;
     const { width, height, data } = stoneMask;
@@ -68,33 +63,37 @@ export default function PlayerController({
     return data[(iz * width + ix) * 4] / 255;
   }
 
-  const INTRO_DIST = 0;
+  /* intro choreography */
   const INTRO_ANGLE = Math.PI / -1.4;
   const [stage, setStage] = useState<"idle" | "move" | "rotate" | "done">(
     "idle"
   );
   const hasStartedIntro = useRef(false);
   const startZ = useRef(0);
-  const startQuat = useRef(new THREE.Quaternion());
+  const startQ = useRef(new THREE.Quaternion());
 
+  /* initial spawn */
   useEffect(() => {
     const spawn = { x: 0, y: 0, z: -45 };
     bodyRef.current?.setTranslation(spawn, true);
-    camera.position.set(spawn.x, spawn.y + 3, spawn.z + 6);
+    camOffset.current.copy(CLOSE_CAM);
+    camera.position.copy(camOffset.current).add(spawn);
     camera.lookAt(spawn.x, spawn.y, spawn.z);
   }, [camera]);
 
+  /* kick off intro */
   useEffect(() => {
     if (intro && !hasStartedIntro.current && bodyRef.current) {
       hasStartedIntro.current = true;
       const p = bodyRef.current.translation();
       startZ.current = p.z;
-      startQuat.current.copy(meshGroup.current.quaternion);
+      startQ.current.copy(meshGroup.current.quaternion);
       playerHandle.current?.setAnimation("Walk");
       setStage("move");
     }
   }, [intro]);
 
+  /* pointer handlers */
   useEffect(() => {
     const canvas = gl.domElement;
     const onDown = (e: PointerEvent) => {
@@ -105,9 +104,7 @@ export default function PlayerController({
         e.clientY - size.height * 0.5
       );
     };
-    const onUp = () => {
-      isDown.current = false;
-    };
+    const onUp = () => (isDown.current = false);
     const onMove = (e: PointerEvent) => {
       if (stage !== "done" || disableInput || !isDown.current) return;
       screenVec.current.set(
@@ -125,25 +122,30 @@ export default function PlayerController({
     };
   }, [gl, size, stage, disableInput]);
 
+  /* per‑frame update */
   useFrame(() => {
     if (!bodyRef.current) return;
     const pos = bodyRef.current.translation();
     const vel = bodyRef.current.linvel();
 
+    /* ── INTRO ── */
     if (intro && stage !== "done") {
       if (stage === "move") {
-        bodyRef.current.setLinvel({ x: 0, y: vel.y, z: walkSpeed }, true);
-        if (pos.z >= startZ.current + INTRO_DIST) {
+        bodyRef.current.setLinvel({ x: 0, y: vel.y, z: WALK_SPEED }, true);
+        if (pos.z >= startZ.current) {
           setStage("rotate");
           bodyRef.current.setLinvel({ x: 0, y: vel.y, z: 0 }, true);
           playerHandle.current?.setAnimation("Idle");
         }
-      } else {
-        const left = new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(0, 1, 0),
-          INTRO_ANGLE
-        );
-        const target = startQuat.current.clone().multiply(left);
+      } else if (stage === "rotate") {
+        const target = startQ.current
+          .clone()
+          .multiply(
+            new THREE.Quaternion().setFromAxisAngle(
+              new THREE.Vector3(0, 1, 0),
+              INTRO_ANGLE
+            )
+          );
         meshGroup.current.quaternion.slerp(target, 0.1);
         if (meshGroup.current.quaternion.angleTo(target) < 0.01) {
           meshGroup.current.quaternion.copy(target);
@@ -151,21 +153,31 @@ export default function PlayerController({
           onIntroComplete?.();
         }
       }
-      camera.position.set(pos.x + camX, pos.y + camY, pos.z + camZ);
+
+      camOffset.current.copy(CLOSE_CAM);
+      camera.position.copy(camOffset.current).add(pos);
       camera.lookAt(pos.x, pos.y, pos.z);
       return;
     }
 
+    /* ── AFTER INTRO ── */
+    if (stage === "done") {
+      if (!disableInput) camOffset.current.lerp(NORMAL_CAM, 0.02); // play phase
+      else camOffset.current.copy(CLOSE_CAM); // dialog
+    }
+
+    /* input / movement */
     let desired: typeof moveState.current = "Idle";
     let speed = 0;
     const dir = new THREE.Vector3();
 
     if (isDown.current) {
-      const v = screenVec.current;
-      const len = v.length();
+      const v = screenVec.current,
+        len = v.length();
       if (len > 2) {
-        desired = len >= radius ? "Run" : "Walk";
-        speed = desired === "Run" ? runSpeed : walkSpeed;
+        desired = len >= INPUT_RADIUS ? "Run" : "Walk";
+        speed = desired === "Run" ? RUN_SPEED : WALK_SPEED;
+
         const right = new THREE.Vector3(1, 0, 0)
           .applyQuaternion(camera.quaternion)
           .setY(0)
@@ -174,6 +186,7 @@ export default function PlayerController({
           .applyQuaternion(camera.quaternion)
           .setY(0)
           .normalize();
+
         dir
           .copy(right.multiplyScalar(v.x).add(forward.multiplyScalar(-v.y)))
           .normalize();
@@ -185,6 +198,7 @@ export default function PlayerController({
       playerHandle.current?.setAnimation(desired);
     }
 
+    /* ─── FOOTSTEP SFX (unchanged) ─── */
     const onStone = sampleStone(pos.x, pos.z) < 0.5;
     if (grassWalk && grassRun && stoneWalk && stoneRun) {
       if (desired === "Run") {
@@ -219,6 +233,7 @@ export default function PlayerController({
       }
     }
 
+    /* physics & rotation */
     if (speed > 0) {
       bodyRef.current.setLinvel(
         { x: dir.x * speed, y: vel.y, z: dir.z * speed },
@@ -233,10 +248,12 @@ export default function PlayerController({
       bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
     }
 
-    camera.position.set(pos.x + camX, pos.y + camY, pos.z + camZ);
+    /* camera follow */
+    camera.position.copy(camOffset.current).add(pos);
     camera.lookAt(pos.x, pos.y, pos.z);
   });
 
+  /* scene graph */
   return (
     <RigidBody
       ref={bodyRef}
