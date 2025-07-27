@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface Props {
   ready: boolean;
-  durMs?: number; // wipe duration
+  durMs?: number; // wipe duration (ms)
   onStart?: () => void; // fires on click
   onFinished?: () => void; // fires after wipe ends
 }
@@ -14,30 +14,25 @@ export default function LoadingScreen({
   onFinished = () => {},
 }: Props) {
   const [showStart, setShowStart] = useState(false);
-  const [wipe, setWipe] = useState(false);
+  const [animate, setAnimate] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  /*  Show the Start button once Suspense resolves  */
+  /* Show the Start button once Suspense resolves */
   useEffect(() => {
     if (ready) setShowStart(true);
   }, [ready]);
 
-  /*  Trigger audio, then the wipe‑out  */
+  /* Click → play sound, then add the animation class */
   const handleStartClick = () => {
     onStart?.();
 
-    /* 2‑step RAF + forced reflow → guarantees a paint
-       in the “big circle” state before we shrink it.  */
-    requestAnimationFrame(() => {
-      // force-layout -> cancels any coalesced style updates
-      void wrapperRef.current?.offsetWidth;
+    /* Force a layout so the key‑frame definitely starts from
+       the big circle even on extremely busy frames */
+    void wrapperRef.current?.offsetWidth;
 
-      requestAnimationFrame(() => setWipe(true));
-    });
+    setAnimate(true);
+    setTimeout(onFinished, durMs); // call when wipe is done
   };
-
-  /* vmax keeps the opening circle larger than any screen */
-  const clip = wipe ? "circle(0vmax at 50% 50%)" : "circle(120vmax at 50% 50%)";
 
   const base =
     "fixed inset-0 z-50 flex flex-col items-center justify-center " +
@@ -46,17 +41,12 @@ export default function LoadingScreen({
   return (
     <div
       ref={wrapperRef}
-      className={base}
-      style={{
-        clipPath: clip,
-        WebkitClipPath: clip,
-        transition: `
-          clip-path         ${durMs}ms cubic-bezier(.33,0,.12,1),
-          -webkit-clip-path ${durMs}ms cubic-bezier(.33,0,.12,1)
-        `,
-        willChange: "clip-path",
-      }}
-      onTransitionEnd={() => wipe && onFinished()}
+      className={`${base} ${animate ? "animate-mask-wipe" : ""}`}
+      style={
+        animate
+          ? { animationDuration: `${durMs}ms` }
+          : { clipPath: "circle(120vmax at 50% 50%)" }
+      }
     >
       {/* Logo */}
       <img

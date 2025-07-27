@@ -24,11 +24,17 @@ import {
 type Phase = "loading" | "introMove" | "dialog" | "play";
 
 const dialogueEntries: { text: string; clip: ClipName }[] = [
-  { text: "Hi I'm Jonathan, welcome to my portfolio!", clip: "wave" },
-  { text: "I'm a Software Engineer and Creative Developer", clip: "talking1" },
-  { text: "You can hold down to move around.", clip: "talking2" },
   {
-    text: "Each building will tell you a bit more about me and my work. Explore around a bit, I hope you enjoy!",
+    text: "You must be new here, I'm Jonathan. Welcome to my portfolio!",
+    clip: "wave",
+  },
+  { text: "I'm a Software Engineer and Creative Developer.", clip: "talking1" },
+  {
+    text: "Each building will tell you a bit more about me and my work.",
+    clip: "talking2",
+  },
+  {
+    text: "You can click and drag to move around. Explore a bit, I hope you enjoy!",
     clip: "clap",
   },
 ];
@@ -48,9 +54,9 @@ export default function App() {
     unlockAudioContext();
 
     audioReady.then(() => {
-      trainHorn.play(); // instant
+      trainHorn.play();
       setTimeout(() => {
-        mainTheme.play(); // fade in after 1s
+        mainTheme.play();
       }, 2000);
     });
   }, []);
@@ -88,6 +94,7 @@ export default function App() {
       )}
 
       <Canvas
+        frameloop="demand"
         camera={{ fov: 45, near: 0.1, far: 200, position: [0, 2, 6] }}
         dpr={[1, 1.5]}
         gl={{ powerPreference: "high-performance" }}

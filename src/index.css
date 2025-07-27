@@ -14,3 +14,20 @@ body,
   margin: 0;
   background-color: white;
 }
+
+/* Key‑frame for the loader wipe */
+@keyframes mask-wipe {
+  from {
+    clip-path: circle(120vmax at 50% 50%);
+  }
+  to {
+    clip-path: circle(0vmax at 50% 50%);
+  }
+}
+
+/* Utility class that uses the key‑frame */
+@layer utilities {
+  .animate-mask-wipe {
+    animation: mask-wipe 3s cubic-bezier(0.33, 0, 0.12, 1) forwards;
+  }
+}
