@@ -121,7 +121,11 @@ export let grassWalk: Sound,
   stoneRun: Sound,
   soccerKick: Sound,
   trainHorn: Sound,
-  mainTheme: Sound;
+  mainTheme: Sound,
+  worldDialog1: Sound,
+  worldDialog2: Sound,
+  worldDialog3: Sound,
+  worldDialog4: Sound;
 
 /** Pre‑load every audio file – call once before you enter the game. */
 export async function initAudio() {
@@ -133,14 +137,22 @@ export async function initAudio() {
     soccerKick_,
     trainHorn_,
     mainTheme_,
+    worldDialog1_,
+    worldDialog2_,
+    worldDialog3_,
+    worldDialog4_,
   ] = await Promise.all([
-    makeLoop("/audio/footsteps/grass-walk.m4a", 0.06),
-    makeLoop("/audio/footsteps/grass-run.m4a", 0.06),
+    makeLoop("/audio/footsteps/grass-walk.m4a", 0.05),
+    makeLoop("/audio/footsteps/grass-run.m4a", 0.05),
     makeLoop("/audio/footsteps/stone-walk.m4a", 0.08),
     makeLoop("/audio/footsteps/stone-run.m4a", 0.08),
     makeOneShot("/audio/soccer-kick.mp3", 0.2),
     makeOneShot("/audio/train-horn.mp3", 0.05),
     makeLoop("/audio/mainTheme.mp3", 0.1),
+    makeOneShot("/audio/dialog/world/worldDialog1.wav", 0.05),
+    makeOneShot("/audio/dialog/world/worldDialog2.wav", 0.05),
+    makeOneShot("/audio/dialog/world/worldDialog3.wav", 0.05),
+    makeOneShot("/audio/dialog/world/worldDialog4.wav", 0.05),
   ]);
 
   grassWalk = grassWalk_;
@@ -150,6 +162,10 @@ export async function initAudio() {
   soccerKick = soccerKick_;
   trainHorn = trainHorn_;
   mainTheme = mainTheme_;
+  worldDialog1 = worldDialog1_;
+  worldDialog2 = worldDialog2_;
+  worldDialog3 = worldDialog3_;
+  worldDialog4 = worldDialog4_;
 }
 
 export const audioReady = initAudio();
