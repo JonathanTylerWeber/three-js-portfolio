@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useCallback } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import World from "./components/outerWorld/World";
 import Grass from "./components/outerWorld/Grass";
 import Bugs from "./components/outerWorld/Bugs";
@@ -65,6 +65,30 @@ export default function App() {
   const handleWipeFinished = useCallback(() => {
     setPhase("introMove");
   }, []);
+
+  // ***************
+  // turn off audio when navigating away or muted
+  useEffect(() => {
+    if (!audioReady) return;
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        mainTheme.pause();
+      } else {
+        mainTheme.play();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleVisibility);
+    window.addEventListener("focus", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleVisibility);
+      window.removeEventListener("focus", handleVisibility);
+    };
+  }, [phase]);
+  // ***************
 
   return (
     <>
