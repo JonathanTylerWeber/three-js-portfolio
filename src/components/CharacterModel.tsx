@@ -117,18 +117,18 @@ const CharacterModel = forwardRef<CharacterModelHandle, Props>(
     /* clip dictionary */
     const clips: Record<ClipName, ClipInfo> = useMemo(
       () => ({
-        idle: { action: actions.idle ?? null, tex: openTex, speed: 0.7 },
-        clap: { action: actions.clap ?? null, tex: closedTex, speed: 0.8 },
-        wave: { action: actions.wave ?? null, tex: closedTex, speed: 0.8 },
+        idle: { action: actions.idle ?? null, tex: openTex, speed: 0.5 },
+        clap: { action: actions.clap ?? null, tex: closedTex, speed: 0.6 },
+        wave: { action: actions.wave ?? null, tex: closedTex, speed: 0.5 },
         talking1: {
           action: actions.talking1 ?? null,
           tex: openTex,
-          speed: 0.6,
+          speed: 0.4,
         },
         talking2: {
           action: actions.talking2 ?? null,
           tex: closedTex,
-          speed: 0.6,
+          speed: 0.5,
         },
         talking3: {
           action: actions.talking3 ?? null,

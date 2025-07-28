@@ -8,7 +8,6 @@ import WorldColliders from "./components/outerWorld/WorldColliders";
 import Ball from "./components/outerWorld/Ball";
 import { Perf } from "r3f-perf";
 import { Leva } from "leva";
-import Character, { ClipName } from "./components/Character";
 import PlayerController from "./components/PlayerController";
 import LoadingScreen from "./components/LoadingScreen";
 import SuspenseDoneLogger from "./utils/SuspenseDoneLogger";
@@ -20,6 +19,9 @@ import {
   trainHorn,
   mainTheme,
 } from "./utils/audioManager";
+import CharacterController, {
+  ClipName,
+} from "./components/CharacterController";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
 
@@ -134,7 +136,7 @@ export default function App() {
             <World />
             <WorldColliders />
 
-            <Character
+            <CharacterController
               dialogClip={
                 phase === "dialog"
                   ? dialogueEntries[dialogIndex].clip

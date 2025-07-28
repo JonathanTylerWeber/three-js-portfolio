@@ -21,7 +21,7 @@ interface Props {
   scale?: number;
 }
 
-const FADE_TIME = 0.5;
+const FADE_TIME = 1;
 
 export default function CharacterController({
   dialogClip,
