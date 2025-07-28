@@ -149,7 +149,7 @@ export async function initAudio() {
     makeLoop("/audio/footsteps/stone-walk.m4a", 0.08),
     makeLoop("/audio/footsteps/stone-run.m4a", 0.08),
     makeOneShot("/audio/soccer-kick.mp3", 0.2),
-    makeOneShot("/audio/train-horn.mp3", 0.05),
+    makeOneShot("/audio/trainHorn3.wav", 0.04),
     makeLoop("/audio/mainTheme.mp3", 0.1),
     makeOneShot("/audio/dialog/world/worldDialog1.wav", 0.05),
     makeOneShot("/audio/dialog/world/worldDialog2.wav", 0.05),
