@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ClipName } from "./Character";
 import {
   audioReady,
+  clapping,
   worldDialog1,
   worldDialog2,
   worldDialog3,
@@ -36,6 +37,10 @@ export default function Dialog({ entries, currentIndex, onNext }: DialogProps) {
         worldDialog4,
       ];
       voiceLines[currentIndex]?.play();
+
+      if (currentIndex == 3) {
+        clapping.play();
+      }
     });
 
     setShown("");
@@ -61,6 +66,7 @@ export default function Dialog({ entries, currentIndex, onNext }: DialogProps) {
         clearInterval(timer.current);
         timer.current = null;
       }
+      clapping.pause();
     };
   }, [entry, currentIndex]);
 
@@ -73,6 +79,7 @@ export default function Dialog({ entries, currentIndex, onNext }: DialogProps) {
       setShown(entry.text);
       setDone(true);
     } else {
+      clapping.pause();
       onNext();
     }
   };
@@ -81,20 +88,20 @@ export default function Dialog({ entries, currentIndex, onNext }: DialogProps) {
     <div className="fixed inset-0 z-[9999] flex items-end justify-center p-4 mb-20 pointer-events-none">
       <div className="relative max-w-2xl w-full pointer-events-auto">
         <div className="flex justify-start mb-2">
-          <div className="bg-slate-700 text-white px-4 py-2 rounded-full text-sm xl:text-xl font-medium">
+          <div className="bg-slate-700 text-white px-4 py-2 rounded-full text-sm xl:text-xl font-medium select-none">
             Jonathan
           </div>
         </div>
         <div
-          className="relative bg-amber-50 border-4 border-amber-100 rounded-3xl p-6 shadow-lg cursor-pointer transition-transform hover:scale-[1.02]"
+          className="relative bg-amber-50 border-4 border-amber-100 h-32 rounded-3xl p-6 shadow-lg cursor-pointer transition-transform hover:scale-[1.02]"
           onClick={handleClick}
         >
-          <div className="text-amber-900 text-lg xl:text-3xl leading-relaxed font-medium whitespace-pre-wrap">
+          <div className="text-amber-900 text-lg xl:text-3xl leading-relaxed font-medium whitespace-pre-wrap select-none">
             {shown}
           </div>
 
           {done && (
-            <div className="absolute bottom-3 right-4 text-amber-700 text-sm animate-pulse">
+            <div className="absolute bottom-3 right-4 text-amber-700 text-sm animate-pulse select-none">
               click ▼
             </div>
           )}

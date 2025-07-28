@@ -125,7 +125,8 @@ export let grassWalk: Sound,
   worldDialog1: Sound,
   worldDialog2: Sound,
   worldDialog3: Sound,
-  worldDialog4: Sound;
+  worldDialog4: Sound,
+  clapping: Sound;
 
 /** Pre‑load every audio file – call once before you enter the game. */
 export async function initAudio() {
@@ -141,6 +142,7 @@ export async function initAudio() {
     worldDialog2_,
     worldDialog3_,
     worldDialog4_,
+    clapping_,
   ] = await Promise.all([
     makeLoop("/audio/footsteps/grass-walk.m4a", 0.05),
     makeLoop("/audio/footsteps/grass-run.m4a", 0.05),
@@ -153,6 +155,7 @@ export async function initAudio() {
     makeOneShot("/audio/dialog/world/worldDialog2.wav", 0.05),
     makeOneShot("/audio/dialog/world/worldDialog3.wav", 0.05),
     makeOneShot("/audio/dialog/world/worldDialog4.wav", 0.05),
+    makeLoop("/audio/dialog/world/clapping.wav", 0.4),
   ]);
 
   grassWalk = grassWalk_;
@@ -166,6 +169,7 @@ export async function initAudio() {
   worldDialog2 = worldDialog2_;
   worldDialog3 = worldDialog3_;
   worldDialog4 = worldDialog4_;
+  clapping = clapping_;
 }
 
 export const audioReady = initAudio();
