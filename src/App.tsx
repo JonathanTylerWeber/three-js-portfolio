@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import World from "./components/outerWorld/World";
 import Grass from "./components/outerWorld/Grass";
 import Bugs from "./components/outerWorld/Bugs";
@@ -18,6 +18,7 @@ import {
   audioReady,
   trainHorn,
   mainTheme,
+  clapping,
 } from "./utils/audioManager";
 import CharacterController, {
   ClipName,
@@ -46,6 +47,8 @@ export default function App() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
 
+  const hasStarted = useRef(false);
+
   /** Suspense finished streaming →assets loaded */
   const handleSuspenseDone = useCallback(() => {
     setAssetsLoaded(true);
@@ -54,6 +57,7 @@ export default function App() {
   /** Start‑button click →play horn immediately */
   const handleStart = useCallback(() => {
     unlockAudioContext();
+    hasStarted.current = true;
 
     audioReady.then(() => {
       trainHorn.play();
@@ -74,8 +78,11 @@ export default function App() {
     if (!audioReady) return;
 
     const handleVisibility = () => {
+      if (!hasStarted.current) return;
+
       if (document.hidden) {
         mainTheme.pause();
+        clapping.pause();
       } else {
         mainTheme.play();
       }
