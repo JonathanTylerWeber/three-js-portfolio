@@ -20,6 +20,7 @@ interface Props {
   intro?: boolean;
   disableInput?: boolean;
   onIntroComplete?: () => void;
+  playerPosRef: React.MutableRefObject<THREE.Vector3>;
 }
 
 /* ────────── constants ────────── */
@@ -34,6 +35,7 @@ export default function PlayerController({
   intro = false,
   disableInput = false,
   onIntroComplete,
+  playerPosRef,
 }: Props) {
   /* refs & state */
   const bodyRef = useRef<RapierRigidBody | null>(null);
@@ -126,6 +128,7 @@ export default function PlayerController({
   useFrame(() => {
     if (!bodyRef.current) return;
     const pos = bodyRef.current.translation();
+    playerPosRef.current.set(pos.x, pos.y, pos.z);
     const vel = bodyRef.current.linvel();
 
     /* ── INTRO ── */

@@ -23,6 +23,7 @@ import {
 import CharacterController, {
   ClipName,
 } from "./components/CharacterController";
+import { Vector3 } from "three";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
 
@@ -48,6 +49,7 @@ export default function App() {
   const [dialogIndex, setDialogIndex] = useState(0);
 
   const hasStarted = useRef(false);
+  const playerPosRef = useRef(new Vector3());
 
   /** Suspense finished streaming →assets loaded */
   const handleSuspenseDone = useCallback(() => {
@@ -149,12 +151,14 @@ export default function App() {
                   ? dialogueEntries[dialogIndex].clip
                   : undefined
               }
+              playerPosRef={playerPosRef}
             />
 
             <PlayerController
               intro={phase === "introMove"}
               disableInput={phase !== "play"}
               onIntroComplete={() => setPhase("dialog")}
+              playerPosRef={playerPosRef}
             />
 
             <Grass fieldSize={132.88} maskSize={150} bladeCount={120_000} />

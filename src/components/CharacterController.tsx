@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { LoopRepeat, AnimationAction } from "three";
+import { LoopRepeat, AnimationAction, Vector3, MathUtils } from "three";
 import { useFrame } from "@react-three/fiber";
 import CharacterModel, { CharacterModelHandle } from "./CharacterModel";
 
+/* available clip names */
 export type ClipName =
   | "idle"
   | "clap"
@@ -13,68 +14,83 @@ export type ClipName =
   | "twerk";
 
 interface Props {
-  /** name of the clip to show (or undefined for idle) */
   dialogClip?: ClipName;
-  /* optional transform overrides */
   position?: [number, number, number];
   rotation?: [number, number, number];
   scale?: number;
+  playerPosRef: React.RefObject<Vector3>;
 }
 
+/* tuning */
 const FADE_TIME = 1;
+const FACE_MAX_DIST = 12; // units within which NPC faces/waves
 
 export default function CharacterController({
   dialogClip,
   position,
   rotation,
   scale,
+  playerPosRef,
 }: Props) {
   const modelRef = useRef<CharacterModelHandle>(null);
   const prevRef = useRef<AnimationAction | null>(null);
+  const baseYaw = useRef<number>(0);
 
-  /* play idle on mount */
-  useEffect(() => {
+  /* helper: cross‑fade to a new clip if different */
+  const playClip = (name: ClipName) => {
     const m = modelRef.current;
     if (!m) return;
-    const info = m.clips.idle;
-    if (!info.action) return;
-
-    info.action.reset();
-    info.action.setLoop(LoopRepeat, Infinity);
-    info.action.timeScale = info.speed;
-    info.action.play();
-    m.mixer.update(0);
-    m.setFaceTexture(info.tex);
-    prevRef.current = info.action;
-  }, []);
-
-  /* cross‑fade whenever dialogClip changes */
-  useEffect(() => {
-    const m = modelRef.current;
-    if (!m) return;
-
-    const name = dialogClip ?? "idle";
     const info = m.clips[name];
-    if (!info.action) return;
+    if (!info.action || prevRef.current === info.action) return;
 
     const next = info.action;
-    const prev = prevRef.current;
-    if (prev === next) return;
-
     next.reset();
     next.setLoop(LoopRepeat, Infinity);
     next.timeScale = info.speed;
-    next.fadeIn(FADE_TIME);
-    next.play();
+    next.fadeIn(FADE_TIME).play();
 
-    prev?.fadeOut(FADE_TIME);
+    prevRef.current?.fadeOut(FADE_TIME);
 
     m.setFaceTexture(info.tex);
     prevRef.current = next;
+  };
+
+  /* first mount → idle */
+  useEffect(() => {
+    playClip("idle");
+    baseYaw.current = modelRef.current?.object.rotation.y ?? 0;
+  }, []);
+
+  /* external dialog clip overrides everything */
+  useEffect(() => {
+    if (dialogClip) playClip(dialogClip);
   }, [dialogClip]);
 
-  /* keep mixer advancing in case the parent disabled the global useFrame */
-  useFrame((_, dt) => modelRef.current?.mixer.update(dt));
+  /* each frame: rotate & choose idle/wave when no dialog clip */
+  useFrame((_, dt) => {
+    const m = modelRef.current;
+    const target = playerPosRef.current;
+    if (!m || !target) return;
+
+    m.mixer.update(dt);
+
+    const obj = m.object;
+
+    /* X‑Z distance + yaw */
+    const dx = target.x - obj.position.x;
+    const dz = target.z - obj.position.z;
+    const dist = Math.hypot(dx, dz);
+    const yaw = Math.atan2(dx, dz);
+
+    /* rotate only around Y */
+    const desiredYaw = dist < FACE_MAX_DIST ? yaw : baseYaw.current;
+    obj.rotation.y = MathUtils.lerp(obj.rotation.y, desiredYaw, 0.15);
+
+    /* auto wave when no dialog clip active */
+    if (!dialogClip) {
+      playClip(dist < FACE_MAX_DIST ? "wave" : "idle");
+    }
+  });
 
   return (
     <CharacterModel

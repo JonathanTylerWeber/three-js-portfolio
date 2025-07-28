@@ -31,6 +31,7 @@ export interface CharacterModelHandle {
   clips: Record<ClipName, ClipInfo>;
   mixer: AnimationMixer;
   setFaceTexture: (tex: Texture) => void;
+  object: Object3D;
 }
 
 interface Props {
@@ -164,8 +165,9 @@ const CharacterModel = forwardRef<CharacterModelHandle, Props>(
         clips,
         mixer,
         setFaceTexture,
+        object: scene,
       }),
-      [clips, mixer]
+      [clips, mixer, scene]
     );
 
     /* advance mixer automatically */
