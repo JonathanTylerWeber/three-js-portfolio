@@ -173,7 +173,7 @@ export async function initAudio() {
     makeOneShot("/audio/dialog/world/worldDialog3.wav", 0.05),
     makeOneShot("/audio/dialog/world/worldDialog4.wav", 0.05),
     makeLoop("/audio/dialog/world/clapping.wav", 0.4),
-    makeOneShot("/audio/swordSound.mp3", 0.05),
+    makeOneShot("/audio/swordSound.mp3", 0.03),
   ]);
 
   grassWalk = grassWalk_;
