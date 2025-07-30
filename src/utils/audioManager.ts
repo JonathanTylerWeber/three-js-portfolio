@@ -61,15 +61,30 @@ async function makeOneShot(src: string, volume = 1): Promise<Sound> {
   gain.gain.value = volume;
   gain.connect(ctx.destination);
 
+  let playing = false; // ⇦ new flag
+
   return {
     play() {
+      if (playing) return; // already playing → ignore click
+      playing = true;
+
       const node = ctx.createBufferSource();
       node.buffer = buffer;
       node.connect(gain);
       node.start();
+
+      /* when the one‑shot ends, clear the flag so the next click works */
+      node.addEventListener(
+        "ended",
+        () => {
+          playing = false;
+          node.disconnect(); // tidy‑up
+        },
+        { once: true }
+      );
     },
-    pause: () => {}, // no‑op for SFX
-    isPlaying: () => false, // always momentary
+    pause: () => {}, // no‑op for one‑shots
+    isPlaying: () => playing, // ← now returns real state
   };
 }
 
@@ -126,7 +141,8 @@ export let grassWalk: Sound,
   worldDialog2: Sound,
   worldDialog3: Sound,
   worldDialog4: Sound,
-  clapping: Sound;
+  clapping: Sound,
+  sword: Sound;
 
 /** Pre‑load every audio file – call once before you enter the game. */
 export async function initAudio() {
@@ -143,6 +159,7 @@ export async function initAudio() {
     worldDialog3_,
     worldDialog4_,
     clapping_,
+    sword_,
   ] = await Promise.all([
     makeLoop("/audio/footsteps/grass-walk.m4a", 0.05),
     makeLoop("/audio/footsteps/grass-run.m4a", 0.05),
@@ -156,6 +173,7 @@ export async function initAudio() {
     makeOneShot("/audio/dialog/world/worldDialog3.wav", 0.05),
     makeOneShot("/audio/dialog/world/worldDialog4.wav", 0.05),
     makeLoop("/audio/dialog/world/clapping.wav", 0.4),
+    makeOneShot("/audio/swordSound.mp3", 0.05),
   ]);
 
   grassWalk = grassWalk_;
@@ -170,6 +188,7 @@ export async function initAudio() {
   worldDialog3 = worldDialog3_;
   worldDialog4 = worldDialog4_;
   clapping = clapping_;
+  sword = sword_;
 }
 
 export const audioReady = initAudio();

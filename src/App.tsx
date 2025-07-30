@@ -19,12 +19,14 @@ import {
   trainHorn,
   mainTheme,
   clapping,
+  sword,
 } from "./utils/audioManager";
 import CharacterController, {
   ClipName,
 } from "./components/CharacterController";
 import { Vector3 } from "three";
 import PhysicsDebugger from "./utils/PhysicsDebugger";
+import HoverCone from "./components/HoverCone";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
 
@@ -146,6 +148,13 @@ export default function App() {
 
             <World />
             <WorldColliders />
+
+            <HoverCone
+              onClick={() => sword.play()}
+              conePosition={[-51.7, 5, 42]}
+              sensorPosition={[-51.75, 0, 42]}
+              sensorScale={[1.25, 4, 1]}
+            />
 
             <CharacterController
               dialogClip={
