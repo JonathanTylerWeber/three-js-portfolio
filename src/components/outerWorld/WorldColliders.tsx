@@ -1,5 +1,4 @@
 /* WorldColliders.tsx
-   Drop this inside <Suspense> after the physics <RapierProvider>.
    All walls/floors are one fixed body; each entry is {pos, size} (in meters).
 */
 import { memo, useMemo } from "react";
@@ -23,6 +22,7 @@ const BLOCKERS: Blocker[] = [
   { pos: [67.6, 0.5, 0], size: [1, 4, 70] }, // right wall
   { pos: [-67.6, 0.5, 0], size: [1, 4, 70] }, // left  wall
   // buildings:
+  { pos: [-1.5, 0.5, -46.5], size: [0.75, 4, 0.65] }, //character
   { pos: [0.3, 0.5, -52], size: [9.0, 4, 3] }, //train
   { pos: [-32.4, 0.5, -22], size: [7, 4, 5] }, //theater
   { pos: [-33.5, 0.5, 32], size: [3.6, 4, 3.5] }, //post office

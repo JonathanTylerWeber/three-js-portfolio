@@ -24,6 +24,7 @@ import CharacterController, {
   ClipName,
 } from "./components/CharacterController";
 import { Vector3 } from "three";
+import PhysicsDebugger from "./utils/PhysicsDebugger";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
 
@@ -141,6 +142,7 @@ export default function App() {
 
           <Physics timeStep="vary" maxCcdSubsteps={1}>
             <Perf position="top-left" minimal={false} deepAnalyze={false} />
+            {/* <PhysicsDebugger /> */}
 
             <World />
             <WorldColliders />
