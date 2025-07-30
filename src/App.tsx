@@ -25,7 +25,7 @@ import CharacterController, {
   ClipName,
 } from "./components/CharacterController";
 import { Vector3 } from "three";
-import PhysicsDebugger from "./utils/PhysicsDebugger";
+// import PhysicsDebugger from "./utils/PhysicsDebugger";
 import HoverCone from "./components/HoverCone";
 
 type Phase = "loading" | "introMove" | "dialog" | "play";
